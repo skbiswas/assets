@@ -1,11 +1,20 @@
 package com.skb.app.ui.model;
 
-public class UserRest {
-
+public class UserDetailsRequestModel {
+	
 	private String firstName;
 	private String lastName;
 	private String email;
 	private String userId;
+	private String password;
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
 	public String getEmail() {
 		return email;
@@ -38,5 +47,4 @@ public class UserRest {
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
-
 }
