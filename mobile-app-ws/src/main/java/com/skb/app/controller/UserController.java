@@ -3,6 +3,10 @@
  */
 package com.skb.app.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.skb.app.exception.UserServiceException;
+import com.skb.app.ui.model.UpdateUserDetailsRequestModel;
 import com.skb.app.ui.model.User;
 import com.skb.app.ui.model.UserDetailsRequestModel;
 
@@ -28,11 +34,19 @@ import com.skb.app.ui.model.UserDetailsRequestModel;
 @RestController
 @RequestMapping("/user")
 public class UserController {
+	
+	Map<String, User> userMap = null;
 
 	/*
 	 * @GetMapping public String getUsers() { return "Get User invoked"; }
 	 */
 
+	/**
+	 * In order to return custom status code other than the default 200, ResponseEntity needs to be returned.
+	 * @param userId
+	 * @return
+	 */
+	
 	/*
 	@GetMapping(path = "/{userId}", produces = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public User getUserById(@PathVariable String userId) {
@@ -43,12 +57,7 @@ public class UserController {
 		return user;
 	}
 	*/
-	
-	/**
-	 * In order to return custom status code other than the default 200, ResponseEntity needs to be returned.
-	 * @param userId
-	 * @return
-	 */
+	/*
 	@GetMapping(path = "/{userId}", produces = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<User> getUserById(@PathVariable String userId) {
 		User user = new User();
@@ -58,6 +67,35 @@ public class UserController {
 				
 		return new ResponseEntity<User>(user,HttpStatus.OK);
 		//return new ResponseEntity<User>(HttpStatus.BAD_REQUEST);
+	}
+	*/
+	/*
+	@GetMapping(path = "/{userId}", produces = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<User> getUserById(@PathVariable String userId) {
+		User user = null;
+		ResponseEntity<User> responseEntity = new ResponseEntity<User>(HttpStatus.NOT_FOUND);
+		if(userMap != null) {
+			responseEntity = userMap.containsKey(userId) ? new ResponseEntity<User>(userMap.get(userId), HttpStatus.OK) : responseEntity; 
+		}
+		return responseEntity;
+	}
+	*/
+	@GetMapping(path = "/{userId}", produces = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<User> getUserById(@PathVariable String userId) {
+		/*
+		String firstName = null;
+		int nameLength = firstName.length();
+		*/
+		if(true) {
+			throw new UserServiceException("Exception in User Controller");
+		}
+		
+		User user = null;
+		ResponseEntity<User> responseEntity = new ResponseEntity<User>(HttpStatus.NOT_FOUND);
+		if(userMap != null) {
+			responseEntity = userMap.containsKey(userId) ? new ResponseEntity<User>(userMap.get(userId), HttpStatus.OK) : responseEntity; 
+		}
+		return responseEntity;
 	}
 
 	@GetMapping
@@ -71,21 +109,47 @@ public class UserController {
 				produces = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<User> createUser(@Validated @RequestBody UserDetailsRequestModel userDetailsRequestModel) {
 		User user = new User();
+		String userId = UUID.randomUUID().toString();
 		user.setEmail(userDetailsRequestModel.getEmail());
 		user.setFirstName(userDetailsRequestModel.getFirstName());
 		user.setLastName(userDetailsRequestModel.getLastName());
+		user.setUserId(userId);
+		
+		
+		if(null == userMap) {
+			userMap = new HashMap<>();
+		}
+		userMap.put(userId, user);
 		
 		return new ResponseEntity<User>(user,HttpStatus.OK);
 	}
 
-	@PutMapping
-	public String updateUser() {
-		return "Update user invoked";
+	@PutMapping (path="/{userId}" , consumes = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE }, 
+			produces = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<User> updateUser(@PathVariable String userId,
+			@Validated @RequestBody UpdateUserDetailsRequestModel userDetailsRequestModel) {
+
+		ResponseEntity<User> responseEntity = new ResponseEntity<User>(HttpStatus.NOT_FOUND);
+		if (userMap != null && userMap.containsKey(userId)) {
+			User user = userMap.get(userId);
+			user.setFirstName(userDetailsRequestModel.getFirstName());
+			user.setLastName(userDetailsRequestModel.getLastName());
+			
+			/** Though redundant, let us update the User object explicitly*/
+			userMap.put(userId, user);
+			
+			responseEntity = new ResponseEntity<User>(user, HttpStatus.OK);
+			
+		}
+		return responseEntity;
 	}
 
-	@DeleteMapping
-	public String deleteUser() {
-		return "Delete user invoked";
+	@DeleteMapping (path="/{userId}")
+	public ResponseEntity<Void> deleteUser(@PathVariable String userId) {
+		if(null != userMap) {
+			userMap.remove(userId);
+		}
+		return ResponseEntity.noContent().build();
 	}
 
 }

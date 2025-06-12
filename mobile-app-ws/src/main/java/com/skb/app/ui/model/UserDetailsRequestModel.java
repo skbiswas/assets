@@ -1,11 +1,22 @@
 package com.skb.app.ui.model;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 public class UserDetailsRequestModel {
-	
+
+	@NotNull (message = "First Name can not be empty")
 	private String firstName;
+	
+	@NotNull (message = "Last Name can not be empty")
 	private String lastName;
+
+	@Email (message = "Email has to be of valid format")
 	private String email;
-	private String userId;
+	
+	@NotNull(message = "Password can not be empty")
+	@Size(min = 8, max= 16, message = "Password has to be at least 8 and less than 16 characters")
 	private String password;
 
 	public String getPassword() {
@@ -40,11 +51,5 @@ public class UserDetailsRequestModel {
 		this.lastName = lastName;
 	}
 
-	public String getUserId() {
-		return userId;
-	}
-
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
+	
 }
